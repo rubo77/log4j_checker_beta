@@ -3,7 +3,7 @@
 # Run with:
 # wget https://raw.githubusercontent.com/ad-aures/log4j_checker_beta/main/log4j_checker_beta.sh -q -O - |bash
 
-echo "Install locate…"
+echo "Installing locate package…"
 sudo apt-get -qq update
 sudo apt-get -qq -y install locate
 sudo updatedb
