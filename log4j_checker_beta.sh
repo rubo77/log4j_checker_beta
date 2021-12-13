@@ -3,13 +3,17 @@ if [ "$(locate log4j|grep -v log4js)" ]; then
   echo "### maybe vulnerable, those files contain the name:";
   locate log4j|grep -v log4js;
 fi;
-if [ "$(yum list installed|grep log4j|grep -v log4js)" ]; then
-  echo "### maybe vulnerable, yum installed packages:";
-  dpkg -l|grep log4j;
+if [ "$(command -v yum)" ]; then
+  if [ "$(yum list installed|grep log4j|grep -v log4js)" ]; then
+    echo "### maybe vulnerable, yum installed packages:";
+    dpkg -l|grep log4j;
+  fi;
 fi;
-if [ "$(dpkg -l|grep log4j|grep -v log4js)" ]; then
-  echo "### maybe vulnerable, dpkg installed packages:";
-  dpkg -l|grep log4j;
+if [ "$(command -v dpkg)" ]; then
+  if [ "$(dpkg -l|grep log4j|grep -v log4js)" ]; then
+    echo "### maybe vulnerable, dpkg installed packages:";
+    dpkg -l|grep log4j;
+  fi;
 fi;
 if [ "$(which java)" ]; then
   echo "java is installed, so note that Java applications often bundle their libraries inside jar/war/ear files, so there still could be log4j in such applications.";
