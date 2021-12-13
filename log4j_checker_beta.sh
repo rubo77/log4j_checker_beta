@@ -10,4 +10,4 @@ fi;
 if [ "$(which java)" ]; then
   echo "java is installed, so note that Java applications often bundle their libraries inside jar/war/ear files, so there still could be log4j in such applications.";
 fi;
-echo "check done";
+echo "If you see no output above this line, you are safe. Otherwise check the listed files and packages.";
