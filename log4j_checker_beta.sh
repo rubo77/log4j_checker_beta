@@ -3,8 +3,12 @@ if [ "$(locate log4j|grep -v log4js)" ]; then
   echo "### maybe vulnerable, those files contain the name:";
   locate log4j|grep -v log4js;
 fi;
+if [ "$(yum list installed|grep log4j|grep -v log4js)" ]; then
+  echo "### maybe vulnerable, yum installed packages:";
+  dpkg -l|grep log4j;
+fi;
 if [ "$(dpkg -l|grep log4j|grep -v log4js)" ]; then
-  echo "### maybe vulnerable, installed packages:";
+  echo "### maybe vulnerable, dpkg installed packages:";
   dpkg -l|grep log4j;
 fi;
 if [ "$(which java)" ]; then
