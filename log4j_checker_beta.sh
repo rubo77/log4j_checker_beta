@@ -6,6 +6,7 @@
 echo "Install locate…"
 sudo apt-get -qq update
 sudo apt-get -qq -y install locate
+sudo updatedb
 
 echo "checking for log4j vulnerability...";
 if [ "$(locate log4j|grep -v log4js)" ]; then
