@@ -1,7 +1,7 @@
 echo "checking for log4j vulnerability...";
-if [ "$(find / -name 'log4j*'|grep -v log4js)" ]; then
+if [ "$(locate log4j|grep -v log4js)" ]; then
   echo "### maybe vulnerable, those files contain the name:";
-  find / -name 'log4j*'|grep -v log4js;
+  locate log4j|grep -v log4js;
 fi;
 if [ "$(dpkg -l|grep log4j|grep -v log4js)" ]; then
   echo "### maybe vulnerable, installed packages:";
