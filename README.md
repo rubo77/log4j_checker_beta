@@ -10,6 +10,10 @@ This only checks if it is impossible, that you could be vulnerable.
 
 ## dependencies
 
-`locate`
+The command `locate` has to to be installed, be sure to have locate up-to-date with:
 
-discussion at https://serverfault.com/questions/1086065/how-do-i-check-if-log4j-is-installed-on-my-server/1086132#1086132
+    sudo updatedb
+
+## discussion
+
+https://serverfault.com/questions/1086065/how-do-i-check-if-log4j-is-installed-on-my-server/1086132#1086132
