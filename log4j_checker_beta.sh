@@ -55,6 +55,7 @@ read -p "Do you want to scan the filesystem for log4j-core-*.jar and JdniLookup.
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
   # perform best-effort (lowest priority) find call for log4j-core jar
+  echo -e ${YELLOW}"### checking filesystem for log4j-core-*.jar ..."${ENDCOLOR1}
   OUTPUT="$(ionice -c 2 -n 7 find / -name log4j-core-*.jar 2>/dev/null)"
   if [ "$OUTPUT" ]; then
     echo -e ${RED}"[WARNING] maybe vulnerable, those files contain the log4j jar:"${ENDCOLOR}
@@ -62,6 +63,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
   fi;
 
   # perform best-effort find call for all jars, and search for JndiLookup.class inside
+  echo -e ${YELLOW}"### checking filesystem for 'JndiLookup.class' in *.jar ..."${ENDCOLOR1}
   OUTPUT="$(ionice -c 2 -n 7 find / -name "*.jar" -exec sh -c 'unzip -l {}|grep -H --label {} JndiLookup.class' \; 2>/dev/null)"
     if [ "$OUTPUT" ]; then
     echo -e ${RED}"[WARNING] maybe vulnerable, those files contain the JndiLookup.class:"${ENDCOLOR}
