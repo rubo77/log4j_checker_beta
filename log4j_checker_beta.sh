@@ -8,6 +8,8 @@
 export LANG=
 
 RED="\033[0;31m"; GREEN="\033[32m"; YELLOW="\033[1;33m"; ENDCOLOR="\033[0m"
+# if you don't want colored output, set the variables to empty strings:
+# RED=""; GREEN=""; YELLOW=""; ENDCOLOR=""
 
 function warning() {
   printf "${RED}[WARNING] %s${ENDCOLOR}\n" "$1" >&2
