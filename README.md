@@ -1,8 +1,7 @@
 # log4j_checker_beta
 
-A fast check, if your server could be vulnerable to CVE-2021-44228
-
-This only checks if it is impossible, that you could be vulnerable.
+This script is used to perform a fast check if your server is possibly affected by CVE-2021-44228 (the log4j vulnerability).
+It does not give a 100% proof, that you are not vulnerable, but it gives a hint if it is possible, that you could be vulnerable.
 
 ## Run with:
 
@@ -13,6 +12,9 @@ This only checks if it is impossible, that you could be vulnerable.
 The command `locate` has to to be installed, be sure to have locate up-to-date with:
 
     sudo updatedb
+    
+
+The command `unzip` also needs to be installed, to inspect the jar files.
 
 ## discussion
 
