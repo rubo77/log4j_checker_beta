@@ -19,6 +19,10 @@ function information() {
   printf "${YELLOW}[INFO] %s${ENDCOLOR}\n" "$1"
 }
 
+function ok() {
+  printf "${GREEN}[INFO] %s${ENDCOLOR}\n" "$1"
+}
+
 function locate_log4j() {
   if [ "$(command -v locate)" ]; then
     locate log4j
@@ -48,6 +52,8 @@ OUTPUT="$(locate_log4j | grep -iv log4js | grep -v log4j_checker_beta)"
 if [ "$OUTPUT" ]; then
   warning "Maybe vulnerable, those files contain the name:"
   printf "%s\n" "$OUTPUT"
+else
+  ok "No files containing log4j"
 fi
 
 if [ "$(command -v yum)" ]; then
@@ -57,6 +63,8 @@ if [ "$(command -v yum)" ]; then
   if [ "$OUTPUT" ]; then
     warning "Maybe vulnerable, yum installed packages:"
     printf "%s\n" "$OUTPUT"
+  else
+    ok "No yum packages found"
   fi
 fi
 
@@ -66,6 +74,8 @@ if [ "$(command -v dpkg)" ]; then
   if [ "$OUTPUT" ]; then
     warning "Maybe vulnerable, dpkg installed packages:"
     printf "%s\n" "$OUTPUT"
+  else
+    ok "No dpkg packages found"
   fi
 fi
 
@@ -77,7 +87,7 @@ if [ "$JAVA" ]; then
     "Java applications often bundle their libraries inside binary files," \
     "so there could be log4j in such applications."
 else
-  information "Java is not installed"
+  ok "Java is not installed"
 fi
 
 if [ "$(command -v unzip)" ]; then
