@@ -58,7 +58,7 @@ fi
 
 if [ "$(command -v yum)" ]; then
   information "Checking installed yum packages..."
-  OUTPUT="$(yum list installed | grep -i log4j | grep -iv log4js)"
+  OUTPUT="$(yum list installed | grep -i 'solr\|elastic\|log4j' | grep -iv log4js)"
 
   if [ "$OUTPUT" ]; then
     warning "Maybe vulnerable, yum installed packages:"
@@ -70,7 +70,7 @@ fi
 
 if [ "$(command -v dpkg)" ]; then
   information "Checking installed dpkg packages..."
-  OUTPUT="$(dpkg -l | grep -i log4j | grep -iv log4js)"
+  OUTPUT="$(dpkg -l | grep -i 'solr\|elastic\|log4j' | grep -iv log4js)"
   if [ "$OUTPUT" ]; then
     warning "Maybe vulnerable, dpkg installed packages:"
     printf "%s\n" "$OUTPUT"
