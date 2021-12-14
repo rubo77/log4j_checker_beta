@@ -5,43 +5,80 @@
 # needs locate to be installed, be sure to be up-to-date with
 # sudo updatedb
 
-RED="\033[0;31m"; GREEN="\033[32m"; YELLOW="\033[1;33m"; ENDCOLOR="\033[0m"
-WARNING="[WARNING]"${ENDCOLOR}
+export LANG=
 
-echo -e ${YELLOW}"### locate files containing log4j ..."${ENDCOLOR1}
-OUTPUT="$(locate log4j|grep -v log4js)"
-if [ "$OUTPUT" ]; then
-  echo -e ${RED}"[WARNING] maybe vulnerable, those files contain the name:"${ENDCOLOR}
-  echo "$OUTPUT"
-fi;
-if [ "$(command -v yum)" ]; then
-  echo -e ${YELLOW}"### check installed yum packages ..."${ENDCOLOR1}
-  OUTPUT="$(yum list installed|grep log4j|grep -v log4js)"
-  if [ "$OUTPUT" ]; then
-    echo -e ${RED}"[WARNING] maybe vulnerable, yum installed packages:"${ENDCOLOR}
-    echo "$OUTPUT"
-  fi;
-fi;
-if [ "$(command -v dpkg)" ]; then
-  echo -e ${YELLOW}"### check installed dpkg packages ..."${ENDCOLOR1}
-  OUTPUT="$(dpkg -l|grep log4j|grep -v log4js)"
-  if [ "$OUTPUT" ]; then
-    echo -e ${RED}"[WARNING] maybe vulnerable, dpkg installed packages:"${ENDCOLOR}
-    echo "$OUTPUT"
-  fi;
-fi;
-echo -e ${YELLOW}"### check if Java is installed ..."${ENDCOLOR1}
-JAVA="$(command -v java)"
-if [ "$JAVA" ]; then
-  echo -e ${RED}"[WARNING] Java is installed"${ENDCOLOR}
-  echo "Java applications often bundle their libraries inside jar/war/ear files, so there still could be log4j in such applications.";
-else
-  echo -e ${GREEN}"[OK]"${ENDCOLOR}" Java is not installed"
-fi;
-echo -e ${YELLOW}"_________________________________________________"${ENDCOLOR}
-echo "If you see no uncommented output above this line, you are safe. Otherwise check the listed files and packages.";
-if [ "$JAVA" == "" ]; then
-  echo "Some apps bundle the vulnerable library in their own compiled package, so 'java' might not be installed but one such apps could still be vulnerable."
+function warning() {
+  printf "[WARNING] %s\n" "$1" >&2
+}
+
+function information() {
+  printf "[INFO] %s\n" "$1"
+}
+
+function locate_log4j() {
+  if [ "$(command -v locate)" ]
+  then
+    locate log4j
+  else
+    find \
+      /var /etc /usr /lib* \
+      -name "*log4j*" \
+      2>&1 \
+      | grep -v '^find:.* Permission denied$'
+  fi
+}
+
+information "Looking for files containing log4j..."
+OUTPUT="$(locate_log4j | grep -v log4js)"
+if [ "$OUTPUT" ]
+then
+  warning "Maybe vulnerable, those files contain the name:"
+  printf "%s\n" "$OUTPUT"
 fi
-echo
-echo "Note, this is not 100% proof you are not vulnerable, but a strong hint!"
+
+if [ "$(command -v yum)" ]
+then
+  information "Checking installed yum packages..."
+  OUTPUT="$(yum list installed | grep -i log4j | grep -v log4js)"
+
+  if [ "$OUTPUT" ]
+  then
+    warning "Maybe vulnerable, yum installed packages:"
+    printf "%s\n" "$OUTPUT"
+  fi
+fi
+
+if [ "$(command -v dpkg)" ]
+then
+  information "Checking installed dpkg packages..."
+  OUTPUT="$(dpkg -l | grep -i log4j | grep -v log4js)"
+  if [ "$OUTPUT" ]; then
+    warning "Maybe vulnerable, dpkg installed packages:"
+    printf "%s\n" "$OUTPUT"
+  fi
+fi
+
+information "Checking if Java is installed..."
+JAVA="$(command -v java)"
+if [ "$JAVA" ]
+then
+  warning "Java is installed"
+  printf "     %s\n     %s\n" \
+    "Java applications often bundle their libraries inside jar/war/ear files," \
+    "so there still could be log4j in such applications."
+else
+  information "Java is not installed"
+fi
+
+cat <<'TEXTEND'
+
+-------------------------------------------------------------------------------
+
+If you see no uncommented output above this line, you are safe. Otherwise check
+the listed files and packages.
+
+Some apps bundle the vulnerable library in their own compiled package, so
+'java' might not be installed but one such apps could still be vulnerable.
+
+Note: this is not 100% proof you are not vulnerable, but a strong hint!
+TEXTEND
