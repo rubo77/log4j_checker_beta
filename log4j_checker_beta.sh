@@ -41,7 +41,7 @@ function find_jar_files() {
 }
 
 information "Looking for files containing log4j..."
-OUTPUT="$(locate_log4j | grep -v log4js)"
+OUTPUT="$(locate_log4j | grep -v log4j_checker_beta)"
 if [ "$OUTPUT" ]
 then
   warning "Maybe vulnerable, those files contain the name:"
