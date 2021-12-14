@@ -24,7 +24,7 @@ if [ "$(command -v yum)" ]; then
 fi;
 if [ "$(command -v dpkg)" ]; then
   echo -e ${YELLOW}"### check installed dpkg packages ..."${ENDCOLOR1}
-  OUTPUT="$(dpkg -l|grep solr|grep elastic|grep log4j|grep -v log4js)"
+  OUTPUT="$(dpkg -l|grep 'solr\|elastic\|log4j'|grep -v log4js)"
   if [ "$OUTPUT" ]; then
     echo -e ${RED}"[WARNING] maybe vulnerable, dpkg installed packages:"${ENDCOLOR}
     echo "$OUTPUT"
