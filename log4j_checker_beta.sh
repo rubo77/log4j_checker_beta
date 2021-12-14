@@ -9,7 +9,7 @@ RED="\033[0;31m"; GREEN="\033[32m"; YELLOW="\033[1;33m"; ENDCOLOR="\033[0m"
 WARNING="[WARNING]"${ENDCOLOR}
 
 echo -e ${YELLOW}"### locate files containing log4j ..."${ENDCOLOR1}
-OUTPUT="$(locate log4j|grep -v log4js)"
+OUTPUT="$(locate -e log4j|grep -v log4js|grep -v log4j_checker_beta)"
 if [ "$OUTPUT" ]; then
   echo -e ${RED}"[WARNING] maybe vulnerable, those files contain the name:"${ENDCOLOR}
   echo "$OUTPUT"
