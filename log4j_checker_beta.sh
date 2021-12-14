@@ -25,14 +25,25 @@ function locate_log4j() {
       /var /etc /usr /opt /lib* \
       -name "*log4j*" \
       2>&1 \
-      | grep -v '^find:.* Permission denied$'
+      | grep -v '^find:.* Permission denied$' \
+      | grep -v '^find:.* No such file or directory$'
   fi
+}
+
+function find_jar_files() {
+  find \
+    /var /etc /usr /opt /lib* \
+    -name "*.jar" \
+    -o -name "*.war" \
+    -o -name "*.ear" \
+    2>&1 \
+    | grep -v '^find:.* Permission denied$' \
+    | grep -v '^find:.* No such file or directory$'
 }
 
 information "Looking for files containing log4j..."
 OUTPUT="$(locate_log4j | grep -v log4js)"
-if [ "$OUTPUT" ]
-then
+if [ "$OUTPUT" ]; then
   warning "Maybe vulnerable, those files contain the name:"
   printf "%s\n" "$OUTPUT"
 fi
@@ -66,6 +77,18 @@ if [ "$JAVA" ]; then
 else
   information "Java is not installed"
 fi
+
+if [ "$(command -v unzip)" ]; then
+  information "Analyzing JAR/WAR/EAR files..."
+  find_jar_files | while read -r jar_file; do
+    unzip -l "$jar_file" 2> /dev/null \
+      | grep -q -i "log4j" \
+      && warning "$jar_file contains log4j files"
+  done
+else
+  information "Cannot look for log4j inside JAR/WAR/EAR files (unzip not found)"
+fi
+
 information "_________________________________________________"
 echo "If you see no uncommented output above this line, you are safe. Otherwise check the listed files and packages.";
 if [ "$JAVA" == "" ]; then
