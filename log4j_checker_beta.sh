@@ -22,7 +22,7 @@ function locate_log4j() {
     locate log4j
   else
     find \
-      /var /etc /usr /lib* \
+      /var /etc /usr /opt /lib* \
       -name "*log4j*" \
       2>&1 \
       | grep -v '^find:.* Permission denied$'
