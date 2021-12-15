@@ -102,6 +102,17 @@ if [ "$(command -v unzip)" ]; then
     unzip -l "$jar_file" 2> /dev/null \
       | grep -q -i "log4j" \
       && warning "$jar_file contains log4j files"
+    if [[ -f "./vulnerable.hashes" ]]; then
+      dir_unzip=$(mktemp -d)
+      unzip -qq -DD "$jar_file" '*.class' -d "$dir_unzip" \
+        && find "$dir_unzip" -type f -not -name "*"$'\n'"*" -name '*.class' -exec sha256sum "{}" \; \
+        | cut -d" " -f1 | sort | uniq > "$dir_unzip/$jar_file.hashes";
+      num_found = $(comm -12 ./vulnerable.hashes "$dir_unzip/$jar_file.hashes" | wc -l)
+      if [[ "$num_found" -gt 0 ]]; then
+        warning "$jar_file contains vulnerable binary classes"
+      fi
+      rm -rf -- "$dir_unzip"
+    fi
   done
 else
   information "Cannot look for log4j inside JAR/WAR/EAR files (unzip not found)"
