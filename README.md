@@ -45,3 +45,5 @@ You can use the snippet
     IEX (New-Object Net.Webclient).downloadstring("https://raw.githubusercontent.com/anlx-sw/log4j_checker_beta/main/get-vulnerablejars.ps1")
     
 to directly check for potentially vulnerable jar files on windows. Or you could download [this  script](get-vulnerablejars-win.ps1) and point the output to a writable fileshare.
+
+Error handling or additional features where not added on purpose to keep it short and easy and compatible with Powershell 2.0 and older versions of Windows. Use your tool of choice to run it with admin permissions (or just use it manually).
