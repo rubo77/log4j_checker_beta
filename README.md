@@ -35,5 +35,7 @@ https://serverfault.com/questions/1086065/how-do-i-check-if-log4j-is-installed-o
 ## Check Windows Hosts
     
 You can use the snippet
+    
     IEX (New-Object Net.Webclient).downloadstring("https://raw.githubusercontent.com/anlx-sw/log4j_checker_beta/main/get-vulnerablejars.ps1")
     
+to directly check for potentially vulnerable jar files on windows. Or you could download the other ps1 script and point the output to a writable fileshare.
