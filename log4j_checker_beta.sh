@@ -104,11 +104,12 @@ if [ "$(command -v unzip)" ]; then
       && warning "$jar_file contains log4j files"
     if [[ -f "./vulnerable.hashes" ]]; then
       dir_unzip=$(mktemp -d)
+      base_name=$(basename "$jar_file")
       unzip -qq -DD "$jar_file" '*.class' -d "$dir_unzip" \
         && find "$dir_unzip" -type f -not -name "*"$'\n'"*" -name '*.class' -exec sha256sum "{}" \; \
-        | cut -d" " -f1 | sort | uniq > "$dir_unzip/$jar_file.hashes";
-      num_found = $(comm -12 ./vulnerable.hashes "$dir_unzip/$jar_file.hashes" | wc -l)
-      if [[ "$num_found" -gt 0 ]]; then
+        | cut -d" " -f1 | sort | uniq > "$dir_unzip/$base_name.hashes";
+      num_found=$(comm -12 ./vulnerable.hashes "$dir_unzip/$base_name.hashes" | wc -l)
+      if [ $num_found -gt 0 ]; then
         warning "$jar_file contains vulnerable binary classes"
       fi
       rm -rf -- "$dir_unzip"
