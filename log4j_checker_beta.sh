@@ -54,6 +54,22 @@ if [ $USER != root ]; then
   warning "You have no root-rights. Not all files will be found."
 fi
 
+# Set this if you have a download for sha256 hashes
+download_file=""
+dir_temp_hashes=$(mktemp -d)
+file_temp_hashes="$dir_temp_hashes/vulnerable.hashes"
+ok_hashes=
+if [[ -n $download_file && $(command -v wget) ]]; then
+        wget  --max-redirect=0 --tries=2 --no-netrc -O "$file_temp_hashes.in" -- "$download_file"
+elif [[ -n $download_file && $(command -v curl) ]]; then
+        curl --globoff -f "$download_file" -o "$file_temp_hashes.in"
+fi
+if [[ $? = 0 && -s "$file_temp_hashes.in" ]]; then
+        cat "$file_temp_hashes.in" | cut -d" " -f1 | sort | uniq  > "$file_temp_hashes"
+        ok_hashes=1
+        information "Downloaded vulnerable hashes from ..."
+fi
+
 information "Looking for files containing log4j..."
 OUTPUT="$(locate_log4j | grep -iv log4js | grep -v log4j_checker_beta)"
 if [ "$OUTPUT" ]; then
@@ -97,20 +113,25 @@ else
 fi
 
 information "Analyzing JAR/WAR/EAR files..."
+if [ $ok_hashes ]; then
+  information "Also checking hashes"
+fi
 if [ "$(command -v unzip)" ]; then
   find_jar_files | while read -r jar_file; do
     unzip -l "$jar_file" 2> /dev/null \
       | grep -q -i "log4j" \
       && warning "$jar_file contains log4j files"
-    if [[ -f "./vulnerable.hashes" ]]; then
+    if [ $ok_hashes ]; then
       dir_unzip=$(mktemp -d)
       base_name=$(basename "$jar_file")
       unzip -qq -DD "$jar_file" '*.class' -d "$dir_unzip" \
         && find "$dir_unzip" -type f -not -name "*"$'\n'"*" -name '*.class' -exec sha256sum "{}" \; \
         | cut -d" " -f1 | sort | uniq > "$dir_unzip/$base_name.hashes";
-      num_found=$(comm -12 ./vulnerable.hashes "$dir_unzip/$base_name.hashes" | wc -l)
-      if [ $num_found -gt 0 ]; then
+      num_found=$(comm -12 "$file_temp_hashes" "$dir_unzip/$base_name.hashes" | wc -l)
+      if [[ -n $num_found && $num_found != 0 ]]; then
         warning "$jar_file contains vulnerable binary classes"
+      else
+        ok "No .class files with known vulnerable hash found in $jar_file at first level."
       fi
       rm -rf -- "$dir_unzip"
     fi
@@ -118,6 +139,7 @@ if [ "$(command -v unzip)" ]; then
 else
   information "Cannot look for log4j inside JAR/WAR/EAR files (unzip not found)"
 fi
+[ $ok_hashes ] && rm -rf -- "$dir_temp_hashes"
 
 information "_________________________________________________"
 if [ "$JAVA" == "" ]; then
