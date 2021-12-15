@@ -1,5 +1,9 @@
 # log4j_checker_beta - Windows and Linux Scripts
 
+If you want to use the windows/linux download cradles below, please review the scripts beforehand. Loading code from the internet and execute it is what brought as here with Log4Shell - right? ;-)
+
+You can easily host the scripts on an internal https-webserver and point the scripts to this server for execution. 
+
 ## Linux Version
 
 This script is used to perform a fast check if your server is possibly affected by CVE-2021-44228 (the log4j vulnerability).
