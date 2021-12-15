@@ -5,6 +5,9 @@
 # needs locate to be installed, be sure to be up-to-date with
 # sudo updatedb
 
+# regular expression, for which packages to scan for:
+PACKAGES='solr\|elastic\|log4j'
+
 export LANG=
 
 RED="\033[0;31m"; GREEN="\033[32m"; YELLOW="\033[1;33m"; ENDCOLOR="\033[0m"
@@ -47,6 +50,10 @@ function find_jar_files() {
     | grep -v '^find:.* No such file or directory$'
 }
 
+if [ $USER != root ]; then
+  warning "You have no root-rights. Not all files will be found."
+fi
+
 information "Looking for files containing log4j..."
 OUTPUT="$(locate_log4j | grep -iv log4js | grep -v log4j_checker_beta)"
 if [ "$OUTPUT" ]; then
@@ -56,10 +63,10 @@ else
   ok "No files containing log4j"
 fi
 
+information "Checking installed packages Solr ElasticSearch and packages containing log4j"
 if [ "$(command -v yum)" ]; then
-  information "Checking installed yum packages..."
-  OUTPUT="$(yum list installed | grep -i 'solr\|elastic\|log4j' | grep -iv log4js)"
-
+  # using yum
+  OUTPUT="$(yum list installed | grep -i $PACKAGES | grep -iv log4js)"
   if [ "$OUTPUT" ]; then
     warning "Maybe vulnerable, yum installed packages:"
     printf "%s\n" "$OUTPUT"
@@ -67,10 +74,9 @@ if [ "$(command -v yum)" ]; then
     ok "No yum packages found"
   fi
 fi
-
 if [ "$(command -v dpkg)" ]; then
-  information "Checking installed dpkg packages..."
-  OUTPUT="$(dpkg -l | grep -i 'solr\|elastic\|log4j' | grep -iv log4js)"
+  # using dpkg
+  OUTPUT="$(dpkg -l | grep -i $PACKAGES | grep -iv log4js)"
   if [ "$OUTPUT" ]; then
     warning "Maybe vulnerable, dpkg installed packages:"
     printf "%s\n" "$OUTPUT"
@@ -90,8 +96,8 @@ else
   ok "Java is not installed"
 fi
 
+information "Analyzing JAR/WAR/EAR files..."
 if [ "$(command -v unzip)" ]; then
-  information "Analyzing JAR/WAR/EAR files..."
   find_jar_files | while read -r jar_file; do
     unzip -l "$jar_file" 2> /dev/null \
       | grep -q -i "log4j" \
