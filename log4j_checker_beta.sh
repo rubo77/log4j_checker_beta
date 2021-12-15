@@ -45,10 +45,14 @@ function scan_filesystem() {
 
 function scan_in_archive_files() {
   $IONICE find / -iname "*.jar" -o -iname "*.war" -o -iname "*.ear" \
-  -exec sh -c 'unzip -l {}|grep -H --label {} JndiLookup.class' \; \
-  2>&1 \
+    2>&1 \
     | grep -v '^find:.* Permission denied$' \
-    | grep -v '^find:.* No such file or directory$'
+    | grep -v '^find:.* No such file or directory$' \
+    | while read file; do
+      unzip -l $file 2>/dev/null \
+      | grep -H --label $file JndiLookup.class \
+        2>/dev/null
+    done
 }
 
 # check root user
