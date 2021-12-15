@@ -1,4 +1,6 @@
-# log4j_checker_beta
+# log4j_checker_beta - Windows and Linux Scripts
+
+##Linux Version
 
 This script is used to perform a fast check if your server is possibly affected by CVE-2021-44228 (the log4j vulnerability).
 It does not give a 100% proof, that you are not vulnerable, but it gives a hint if it is possible, that you could be vulnerable.
@@ -9,17 +11,17 @@ It does not give a 100% proof, that you are not vulnerable, but it gives a hint 
 - Analyzes JAR/WAR/EAR files
 - Option of checking hashes of .class files in archives
 
-## Run with:
+### Run with:
 
     wget https://raw.githubusercontent.com/anlx-sw/log4j_checker_beta/main/log4j_checker_beta.sh -q -O - |bash
 
-## Hash checking
+### Hash checking
 
 The script can test .class files on the first level of JAR/WAR/EAR archives to see if they match with known sha256 hashes of vulnerable class files from log4j.
 You have to provide a download of plain text file with sha256 hashes in HEX format, one per line, everything after first <space> is ignored.
 The URL can be placed in variable download_file. Otherwise this feature will not operate.
 
-## dependencies
+### dependencies
 
 The command `locate` has to to be installed, be sure to have locate up-to-date with:
 
@@ -27,7 +29,7 @@ The command `locate` has to to be installed, be sure to have locate up-to-date w
     
 The command `unzip` also needs to be installed, to inspect the jar files.
 
-## discussion
+### discussion
 
 https://serverfault.com/questions/1086065/how-do-i-check-if-log4j-is-installed-on-my-server/1086132#1086132
 
@@ -38,4 +40,4 @@ You can use the snippet
     
     IEX (New-Object Net.Webclient).downloadstring("https://raw.githubusercontent.com/anlx-sw/log4j_checker_beta/main/get-vulnerablejars.ps1")
     
-to directly check for potentially vulnerable jar files on windows. Or you could download the other ps1 script and point the output to a writable fileshare.
+to directly check for potentially vulnerable jar files on windows. Or you could download [this  script] (get-vulnerablejars-win.ps1) and point the output to a writable fileshare.
