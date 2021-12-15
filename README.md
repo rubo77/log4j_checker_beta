@@ -46,4 +46,4 @@ You can use the snippet
     
 to directly check for potentially vulnerable jar files on windows. Or you could download [this  script](get-vulnerablejars-win.ps1) and point the output to a writable fileshare.
 
-Error handling or additional features where not added on purpose to keep it short and easy and compatible with Powershell 2.0 and older versions of Windows. Use your tool of choice to run it with admin permissions (or just use it manually).
+Error handling or additional features where not added on purpose to keep it short and easy and compatible with Powershell 2.0 and older versions of Windows. This script just checks for jar files and searches for the string "JndiLookup.class" which indicates a vulnerable library. Use your tool of choice to run it with admin permissions (or just use it manually).
