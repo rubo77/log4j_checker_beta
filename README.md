@@ -11,7 +11,7 @@ It does not give a 100% proof, that you are not vulnerable, but it gives a hint 
 
 ## Run with:
 
-    wget https://raw.githubusercontent.com/rubo77/log4j_checker_beta/main/log4j_checker_beta.sh -q -O - |bash
+    wget https://raw.githubusercontent.com/anlx-sw/log4j_checker_beta/main/log4j_checker_beta.sh -q -O - |bash
 
 ## Hash checking
 
