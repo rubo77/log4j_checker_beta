@@ -28,7 +28,6 @@ function ok() {
 
 function locate_log4j() {
   if [ "$(command -v locate)" ]; then
-    information "using locate, which could be using outdated data. besure to have called updatedb recently"
     locate log4j
   else
     find \
@@ -72,6 +71,9 @@ if [[ $? = 0 && -s "$file_temp_hashes.in" ]]; then
 fi
 
 information "Looking for files containing log4j..."
+if [ "$(command -v locate)" ]; then
+  information "using locate, which could be using outdated data. besure to have called updatedb recently"
+fi
 OUTPUT="$(locate_log4j | grep -iv log4js | grep -v log4j_checker_beta)"
 if [ "$OUTPUT" ]; then
   warning "Maybe vulnerable, those files contain the name:"
