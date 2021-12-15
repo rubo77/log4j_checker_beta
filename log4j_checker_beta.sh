@@ -107,7 +107,7 @@ fi
 
 # ask for confirmation for filesystem scan
 echo 
-read -p "Do you want to scan the filesystem for log4j-core-*.jar and JdniLookup.class? [Y/N] " -n 1 -r
+read -p "Do you want to scan the filesystem for log4j-core-*.jar and JndiLookup.class? [Y/N] " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
   # perform best-effort (lowest priority) find call for log4j-core jar
