@@ -28,6 +28,7 @@ function ok() {
 
 function locate_log4j() {
   if [ "$(command -v locate)" ]; then
+    information "using locate, which could be using outdated data. besure to have called updatedb recently"
     locate log4j
   else
     find \
