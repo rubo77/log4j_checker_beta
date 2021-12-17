@@ -5,10 +5,11 @@
 # needs locate to be installed, be sure to be up-to-date with
 # sudo updatedb
 
-# regular expression, for which packages to scan for:
+# regular expression, check the following packages:
 PACKAGES='solr\|elastic\|log4j'
 
-export LANG=
+# Set this if you have a download for sha256 hashes
+download_file=""
 
 RED="\033[0;31m"; GREEN="\033[32m"; YELLOW="\033[1;33m"; ENDCOLOR="\033[0m"
 # if you don't want colored output, set the variables to empty strings:
@@ -25,6 +26,8 @@ function information() {
 function ok() {
   printf "${GREEN}[INFO] %s${ENDCOLOR}\n" "$1"
 }
+
+export LANG=
 
 function locate_log4j() {
   if [ "$(command -v locate)" ]; then
@@ -50,12 +53,11 @@ function find_jar_files() {
     | grep -v '^find:.* No such file or directory$'
 }
 
+# check root user
 if [ $USER != root ]; then
   warning "You have no root-rights. Not all files will be found."
 fi
 
-# Set this if you have a download for sha256 hashes
-download_file=""
 dir_temp_hashes=$(mktemp -d)
 file_temp_hashes="$dir_temp_hashes/vulnerable.hashes"
 ok_hashes=
@@ -70,6 +72,8 @@ if [[ $? = 0 && -s "$file_temp_hashes.in" ]]; then
         information "Downloaded vulnerable hashes from ..."
 fi
 
+# first scan: use locate
+echo
 information "Looking for files containing log4j..."
 if [ "$(command -v locate)" ]; then
   information "using locate, which could be using outdated data. besure to have called updatedb recently"
@@ -82,7 +86,9 @@ else
   ok "No files containing log4j"
 fi
 
-information "Checking installed packages Solr ElasticSearch and packages containing log4j"
+# second scan: use package manager
+echo
+information "Checking installed packages: ($PACKAGES)"
 if [ "$(command -v yum)" ]; then
   # using yum
   OUTPUT="$(yum list installed | grep -i $PACKAGES | grep -iv log4js)"
@@ -104,6 +110,8 @@ if [ "$(command -v dpkg)" ]; then
   fi
 fi
 
+# third scan: check for "java" command
+echo
 information "Checking if Java is installed..."
 JAVA="$(command -v java)"
 if [ "$JAVA" ]; then
@@ -115,6 +123,8 @@ else
   ok "Java is not installed"
 fi
 
+# perform best-effort find call for all jars and optionally check against hashes
+echo
 information "Analyzing JAR/WAR/EAR files..."
 if [ $ok_hashes ]; then
   information "Also checking hashes"
@@ -146,8 +156,9 @@ fi
 
 information "_________________________________________________"
 if [ "$JAVA" == "" ]; then
-  warning "Some apps bundle the vulnerable library in their own compiled package, so 'java' might not be installed but one such apps could still be vulnerable."
+  warning "Some apps bundle the vulnerable library in their own compiled package, so even if 'java' is not installed, one of the applications could still be vulnerable."
 fi
+
 echo
-warning "This whole script is not 100% proof you are not vulnerable, but a strong hint"
+warning "This script does not guarantee that you are not vulnerable, but is a strong hint."
 echo
