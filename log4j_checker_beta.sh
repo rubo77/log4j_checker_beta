@@ -35,7 +35,7 @@ function locate_log4j() {
     locate log4j
   else
     find \
-      /var /etc /usr /opt /lib* \
+      /var /data /etc /usr /opt /lib* \
       -name "*log4j*" \
       2>&1 \
       | grep -v '^find:.* Permission denied$' \
@@ -45,7 +45,7 @@ function locate_log4j() {
 
 function find_jar_files() {
   find \
-    /var /etc /usr /opt /lib* \
+    /var /data /etc /usr /opt /lib* \
     -name "*.jar" \
     -o -name "*.war" \
     -o -name "*.ear" \
