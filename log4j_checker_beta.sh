@@ -9,7 +9,8 @@
 PACKAGES='solr\|elastic\|log4j'
 
 # Set this if you have a download for sha256 hashes
-download_file=""
+SHA256_HASHES_URL="$1"
+# e.g. SHA256_HASHES_URL="https://github.com/mubix/CVE-2021-44228-Log4Shell-Hashes/blob/main/sha256sums.txt"
 
 RED="\033[0;31m"; GREEN="\033[32m"; YELLOW="\033[1;33m"; ENDCOLOR="\033[0m"
 # if you don't want colored output, set the variables to empty strings:
@@ -61,10 +62,10 @@ fi
 dir_temp_hashes=$(mktemp -d)
 file_temp_hashes="$dir_temp_hashes/vulnerable.hashes"
 ok_hashes=
-if [[ -n $download_file && $(command -v wget) ]]; then
-        wget  --max-redirect=0 --tries=2 --no-netrc -O "$file_temp_hashes.in" -- "$download_file"
-elif [[ -n $download_file && $(command -v curl) ]]; then
-        curl --globoff -f "$download_file" -o "$file_temp_hashes.in"
+if [[ -n $SHA256_HASHES_URL && $(command -v wget) ]]; then
+        wget  --max-redirect=0 --tries=2 --no-netrc -O "$file_temp_hashes.in" -- "$SHA256_HASHES_URL"
+elif [[ -n $SHA256_HASHES_URL && $(command -v curl) ]]; then
+        curl --globoff -f "$SHA256_HASHES_URL" -o "$file_temp_hashes.in"
 fi
 if [[ $? = 0 && -s "$file_temp_hashes.in" ]]; then
         cat "$file_temp_hashes.in" | cut -d" " -f1 | sort | uniq  > "$file_temp_hashes"
