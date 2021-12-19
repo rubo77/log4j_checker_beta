@@ -15,9 +15,17 @@ It does not give a 100% proof, that you are not vulnerable, but it gives a hint 
 
 ## Hash checking
 
-The script can test .class files on the first level of JAR/WAR/EAR archives to see if they match with known sha256 hashes of vulnerable class files from log4j.
+The script can test .class files on the first level of JAR/WAR/EAR archives to see if they match with known sha256 hashes of vulnerable class files from log4j.  
 You have to provide a download of plain text file with sha256 hashes in HEX format, one per line, everything after first <space> is ignored.
 The URL can be placed in variable download_file. Otherwise this feature will not operate.
+    
+The information Lunasec.io has put out about hashes of vulnerable binary Java .class files:
+
+https://github.com/lunasec-io/lunasec/blob/master/tools/log4shell/constants/vulnerablehashes.go
+
+We did not include an actual URL, set SHA256_HASHES_URL in the script or as first parameter on the shell. 
+
+Also see their blog: https://www.lunasec.io/docs/blog/log4j-zero-day-mitigation-guide/
 
 ## dependencies
 
