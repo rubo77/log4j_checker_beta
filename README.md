@@ -37,11 +37,9 @@ The command `locate` has to to be installed, be sure to have locate up-to-date w
 
     sudo updatedb
     
-The command `unzip` also needs to be installed, to inspect the jar files.
-
-The command `hexdump` is required. To install on Debian and Ubuntu systems:
+The command `unzip` also needs to be installed, to inspect the jar files and `hexdump` is required. To install on Debian and Ubuntu systems:
     
-    sudo apt install bsdmainutils
+    sudo apt install unzip bsdmainutils
 
 ## discussion
 
