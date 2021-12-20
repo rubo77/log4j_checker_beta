@@ -63,7 +63,7 @@ dir_temp_hashes=$(mktemp -d --suffix _log4jscan)
 file_temp_hashes="$dir_temp_hashes/vulnerable.hashes"
 ok_hashes=
 if [[ -n $SHA256_HASHES_URL && $(command -v wget) ]]; then
-  wget  --max-redirect=0 --tries=2 --no-netrc -O "$file_temp_hashes.in" -- "$SHA256_HASHES_URL"
+  wget  --max-redirect=0 --tries=2 -O "$file_temp_hashes.in" -- "$SHA256_HASHES_URL"
 elif [[ -n $SHA256_HASHES_URL && $(command -v curl) ]]; then
   curl --globoff -f "$SHA256_HASHES_URL" -o "$file_temp_hashes.in"
 fi
