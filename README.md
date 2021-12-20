@@ -13,6 +13,10 @@ It does not give a 100% proof, that you are not vulnerable, but it gives a hint 
 
     wget https://raw.githubusercontent.com/rubo77/log4j_checker_beta/main/log4j_checker_beta.sh -q -O - |bash
 
+If you only want to see the warnings use
+
+    wget https://raw.githubusercontent.com/rubo77/log4j_checker_beta/main/log4j_checker_beta.sh -q -O - | bash | grep '\[WARNING\]'
+
 ## Hash checking
 
 The script can test .class files on the first level of JAR/WAR/EAR archives to see if they match with known sha256 hashes of vulnerable class files from log4j.  

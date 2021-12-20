@@ -10,7 +10,11 @@ PACKAGES='solr\|elastic\|log4j'
 
 # Set this if you have a download for sha256 hashes
 SHA256_HASHES_URL="$1"
-# e.g. SHA256_HASHES_URL="https://github.com/mubix/CVE-2021-44228-Log4Shell-Hashes/blob/main/sha256sums.txt"
+
+if [ "$SHA256_HASHES_URL" = "" ]; then
+  information "using default hash file. If you want to use other hashes, set another URL as first argument"
+  SHA256_HASHES_URL="https://raw.githubusercontent.com/rubo77/log4j_checker_beta/main/hashes-pre-cve.txt"
+fi
 
 RED="\033[0;31m"; GREEN="\033[32m"; YELLOW="\033[1;33m"; ENDCOLOR="\033[0m"
 # if you don't want colored output, set the variables to empty strings:
@@ -59,18 +63,18 @@ if [ $USER != root ]; then
   warning "You have no root-rights. Not all files will be found."
 fi
 
-dir_temp_hashes=$(mktemp -d)
+dir_temp_hashes=$(mktemp -d --suffix _log4jscan)
 file_temp_hashes="$dir_temp_hashes/vulnerable.hashes"
 ok_hashes=
 if [[ -n $SHA256_HASHES_URL && $(command -v wget) ]]; then
-        wget  --max-redirect=0 --tries=2 --no-netrc -O "$file_temp_hashes.in" -- "$SHA256_HASHES_URL"
+  wget  --max-redirect=0 --tries=2 --no-netrc -O "$file_temp_hashes.in" -- "$SHA256_HASHES_URL"
 elif [[ -n $SHA256_HASHES_URL && $(command -v curl) ]]; then
-        curl --globoff -f "$SHA256_HASHES_URL" -o "$file_temp_hashes.in"
+  curl --globoff -f "$SHA256_HASHES_URL" -o "$file_temp_hashes.in"
 fi
 if [[ $? = 0 && -s "$file_temp_hashes.in" ]]; then
-        cat "$file_temp_hashes.in" | cut -d" " -f1 | sort | uniq  > "$file_temp_hashes"
-        ok_hashes=1
-        information "Downloaded vulnerable hashes from ..."
+  cat "$file_temp_hashes.in" | cut -d" " -f1 | sort | uniq  > "$file_temp_hashes"
+  ok_hashes=1
+  information "Downloaded vulnerable hashes from $SHA256_HASHES_URL"
 fi
 
 # first scan: use locate
@@ -134,25 +138,33 @@ if [ "$(command -v unzip)" ]; then
   find_jar_files | while read -r jar_file; do
     unzip -l "$jar_file" 2> /dev/null \
       | grep -q -i "log4j" \
-      && warning "$jar_file contains log4j files"
+      && warning "contains log4j files: $jar_file"
     if [ $ok_hashes ]; then
-      dir_unzip=$(mktemp -d)
       base_name=$(basename "$jar_file")
-      unzip -qq -DD "$jar_file" '*.class' -d "$dir_unzip" \
+      dir_unzip="$dir_temp_hashes/java/$( echo "$base_name" | tr -dc '[[:alpha:]]')_$(hexdump -v -n 3 -e '1/1 "%02x"' </dev/urandom)"
+      mkdir -p "$dir_unzip"
+      unzip -qq -DD "$jar_file" '*.class' -d "$dir_unzip" 2> /dev/null \
         && find "$dir_unzip" -type f -not -name "*"$'\n'"*" -name '*.class' -exec sha256sum "{}" \; \
         | cut -d" " -f1 | sort | uniq > "$dir_unzip/$base_name.hashes";
-      num_found=$(comm -12 "$file_temp_hashes" "$dir_unzip/$base_name.hashes" | wc -l)
+      if [ -f "$dir_unzip/$base_name.hashes" ]; then
+        num_found=$(comm -12 "$file_temp_hashes" "$dir_unzip/$base_name.hashes" | wc -l)
+      else
+        num_found=0
+      fi
       if [[ -n $num_found && $num_found != 0 ]]; then
-        warning "$jar_file contains vulnerable binary classes"
+        warning "vulnerable binary classes in: $jar_file"
       else
         ok "No .class files with known vulnerable hash found in $jar_file at first level."
       fi
+      # delete temp folder containing the extracted java files
       rm -rf -- "$dir_unzip"
     fi
   done
 else
   information "Cannot look for log4j inside JAR/WAR/EAR files (unzip not found)"
 fi
+
+# delete temp folder containing $file_temp_hashes
 [ $ok_hashes ] && rm -rf -- "$dir_temp_hashes"
 
 information "_________________________________________________"
