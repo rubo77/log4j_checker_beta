@@ -39,6 +39,10 @@ The command `locate` has to to be installed, be sure to have locate up-to-date w
     
 The command `unzip` also needs to be installed, to inspect the jar files.
 
+The command `hexdump` is required. To install on Debian and Ubuntu systems:
+    
+    sudo apt install bsdmainutils
+
 ## discussion
 
 https://serverfault.com/questions/1086065/how-do-i-check-if-log4j-is-installed-on-my-server/1086132#1086132
