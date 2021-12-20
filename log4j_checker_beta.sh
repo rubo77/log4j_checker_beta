@@ -12,7 +12,7 @@ PACKAGES='solr\|elastic\|log4j'
 SHA256_HASHES_URL="$1"
 
 if [ "$SHA256_HASHES_URL" = "" ]; then
-  information "using default hash file. If you want to use other hashes, set another URL as first argument"
+#  information "using default hash file. If you want to use other hashes, set another URL as first argument"
   SHA256_HASHES_URL="https://raw.githubusercontent.com/rubo77/log4j_checker_beta/main/hashes-pre-cve.txt"
 fi
 
