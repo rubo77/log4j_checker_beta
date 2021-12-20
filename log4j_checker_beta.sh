@@ -11,11 +11,6 @@ PACKAGES='solr\|elastic\|log4j'
 # Set this if you have a download for sha256 hashes
 SHA256_HASHES_URL="$1"
 
-if [ "$SHA256_HASHES_URL" = "" ]; then
-  information "using default hash file. If you want to use other hashes, set another URL as first argument"
-  SHA256_HASHES_URL="https://raw.githubusercontent.com/rubo77/log4j_checker_beta/main/hashes-pre-cve.txt"
-fi
-
 RED="\033[0;31m"; GREEN="\033[32m"; YELLOW="\033[1;33m"; ENDCOLOR="\033[0m"
 # if you don't want colored output, set the variables to empty strings:
 # RED=""; GREEN=""; YELLOW=""; ENDCOLOR=""
@@ -31,6 +26,11 @@ function information() {
 function ok() {
   printf "${GREEN}[INFO] %s${ENDCOLOR}\n" "$1"
 }
+
+if [ "$SHA256_HASHES_URL" = "" ]; then
+  information "using default hash file. If you want to use other hashes, set another URL as first argument"
+  SHA256_HASHES_URL="https://raw.githubusercontent.com/rubo77/log4j_checker_beta/main/hashes-pre-cve.txt"
+fi
 
 export LANG=
 
