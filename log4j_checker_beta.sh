@@ -36,12 +36,11 @@ export LANG=
 
 function locate_log4j() {
   if [ "$(command -v locate)" ]; then
-    locate log4j
+    locate -ei log4j
   else
     find \
       /var /etc /usr /opt /lib* \
-      -name "*log4j*" \
-      2>&1 \
+      -iname "*log4j*" 2>&1 \
       | grep -v '^find:.* Permission denied$' \
       | grep -v '^find:.* No such file or directory$'
   fi
@@ -50,10 +49,7 @@ function locate_log4j() {
 function find_jar_files() {
   find \
     /var /etc /usr /opt /lib* \
-    -name "*.jar" \
-    -o -name "*.war" \
-    -o -name "*.ear" \
-    2>&1 \
+    -iname "*.jar" -o -iname "*.war" -o -iname "*.ear" 2>&1 \
     | grep -v '^find:.* Permission denied$' \
     | grep -v '^find:.* No such file or directory$'
 }
@@ -144,7 +140,7 @@ if [ "$(command -v unzip)" ]; then
       dir_unzip="$dir_temp_hashes/java/$( echo "$base_name" | tr -dc '[[:alpha:]]')_$(hexdump -v -n 3 -e '1/1 "%02x"' </dev/urandom)"
       mkdir -p "$dir_unzip"
       unzip -qq -DD "$jar_file" '*.class' -d "$dir_unzip" 2> /dev/null \
-        && find "$dir_unzip" -type f -not -name "*"$'\n'"*" -name '*.class' -exec sha256sum "{}" \; \
+        && find "$dir_unzip" -type f -not -name "*"$'\n'"*" -iname '*.class' -exec sha256sum "{}" \; \
         | cut -d" " -f1 | sort | uniq > "$dir_unzip/$base_name.hashes";
       if [ -f "$dir_unzip/$base_name.hashes" ]; then
         num_found=$(comm -12 "$file_temp_hashes" "$dir_unzip/$base_name.hashes" | wc -l)
