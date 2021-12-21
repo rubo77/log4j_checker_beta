@@ -17,6 +17,10 @@ If you only want to see the warnings use
 
     wget https://raw.githubusercontent.com/rubo77/log4j_checker_beta/main/log4j_checker_beta.sh -q -O - | bash | grep '\[WARNING\]'
 
+Make sure, your `locate` database is updated before running with 
+
+    sudo updatedb
+
 ## Hash checking
 
 The script can test .class files on the first level of JAR/WAR/EAR archives to see if they match with known sha256 hashes of vulnerable class files from log4j.  
@@ -33,13 +37,12 @@ Also see their blog: https://www.lunasec.io/docs/blog/log4j-zero-day-mitigation-
 
 ## dependencies
 
-The command `locate` has to to be installed, be sure to have locate up-to-date with:
+The commands `locate` and `unzip` need to be installed. `unzip` to inspect the jar files.
 
+To install on Debian and Ubuntu systems:
+    
+    sudo apt install unzip locate
     sudo updatedb
-    
-The command `unzip` also needs to be installed, to inspect the jar files and `hexdump` is required. To install on Debian and Ubuntu systems:
-    
-    sudo apt install unzip bsdmainutils
 
 ## discussion
 

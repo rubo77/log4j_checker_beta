@@ -122,9 +122,8 @@ information "Checking if Java is installed..."
 JAVA="$(command -v java)"
 if [ "$JAVA" ]; then
   warning "Java is installed"
-  printf "     %s\n     %s\n" \
-    "Java applications often bundle their libraries inside binary files," \
-    "so there could be log4j in such applications."
+  information "   Java applications often bundle their libraries inside binary files,"
+  information "   so there could be log4j in such applications."
 else
   ok "Java is not installed"
 fi
@@ -135,14 +134,19 @@ information "Analyzing JAR/WAR/EAR files..."
 if [ $ok_hashes ]; then
   information "Also checking hashes"
 fi
+COUNT=0
+COUNT_FOUND=0
 if [ "$(command -v unzip)" ]; then
-  find_jar_files | while read -r jar_file; do
+  # incect find_jar_files at the end of the while loop to prevent extra shell
+  while read -r jar_file; do
     unzip -l "$jar_file" 2> /dev/null \
-      | grep -q -i "log4j" \
-      && warning "contains log4j files: $jar_file"
+      | grep -q -i "log4j" && \
+      echo && \
+      warning "[$COUNT - contains log4j files] $jar_file"
+    COUNT=$(($COUNT + 1))
     if [ $ok_hashes ]; then
       base_name=$(basename "$jar_file")
-      dir_unzip="$dir_temp_hashes/java/$( echo "$base_name" | tr -dc '[[:alpha:]]')_$(hexdump -v -n 3 -e '1/1 "%02x"' </dev/urandom)"
+      dir_unzip="$dir_temp_hashes/java/$COUNT""_$( echo "$base_name" | tr -dc '[[:alpha:]]')"
       mkdir -p "$dir_unzip"
       unzip -qq -DD "$jar_file" '*.class' -d "$dir_unzip" 2> /dev/null \
         && find "$dir_unzip" -type f -not -name "*"$'\n'"*" -iname '*.class' -exec sha256sum "{}" \; \
@@ -153,14 +157,24 @@ if [ "$(command -v unzip)" ]; then
         num_found=0
       fi
       if [[ -n $num_found && $num_found != 0 ]]; then
-        warning "vulnerable binary classes in: $jar_file"
+        echo
+        warning "[$COUNT - vulnerable binary classes] $jar_file"
+        COUNT_FOUND=$(($COUNT_FOUND + 1))
       else
-        ok "No .class files with known vulnerable hash found in $jar_file at first level."
+        printf "."
+        # ok "[$COUNT] No .class files with known vulnerable hash found in $jar_file at first level."
       fi
       # delete temp folder containing the extracted java files
       rm -rf -- "$dir_unzip"
     fi
-  done
+  done <<<$(find_jar_files)
+  echo
+  if [[ $COUNT -gt 0 ]]; then
+    information "Found $COUNT files in unpacked binaries containing the string 'log4j' with $COUNT_FOUND vulnerabilities"
+    if [[ $COUNT_FOUND -gt 0 ]]; then
+      warning "Found $COUNT_FOUND vulnerabilities in unpacked binaries"
+    fi
+  fi
 else
   information "Cannot look for log4j inside JAR/WAR/EAR files (unzip not found)"
 fi
