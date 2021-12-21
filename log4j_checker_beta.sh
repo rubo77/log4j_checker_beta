@@ -36,7 +36,12 @@ export LANG=
 
 function locate_log4j() {
   if [ "$(command -v locate)" ]; then
-    locate -ei log4j
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      # Mac OSX
+      locate -i log4j
+    else
+      locate -ei log4j
+    fi
   else
     find \
       /var /etc /usr /opt /lib* \
