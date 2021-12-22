@@ -1,6 +1,6 @@
 # log4j_checker_beta - Linux, macOS and Windows Scripts
 
-If you want to use the windows/linux download cradles below, please review the scripts beforehand. Loading code from the internet and execute it is what brought as here with Log4Shell - right? ;-)
+If you want to use the windows/linux download cradles below, please review the scripts beforehand. Loading code from the internet and execute it is what brought us here with Log4Shell - right? ;-)
 
 ## Linux and macOS servers or clients
 
