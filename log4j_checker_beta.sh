@@ -167,7 +167,7 @@ if [ "$(command -v unzip)" ]; then
       # delete temp folder containing the extracted java files
       rm -rf -- "$dir_unzip"
     fi
-  done <<<$(find_jar_files)
+  done <<<"$(find_jar_files)"
   echo
   if [[ $COUNT -gt 0 ]]; then
     information "Found $COUNT files in unpacked binaries containing the string 'log4j' with $COUNT_FOUND vulnerabilities"
