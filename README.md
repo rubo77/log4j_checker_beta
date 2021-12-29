@@ -15,6 +15,7 @@ It does not give a 100% proof, that you are not vulnerable, but it gives a hint 
 
 ### Run with:
 
+
     wget https://raw.githubusercontent.com/rubo77/log4j_checker_beta/main/log4j_checker_beta.sh -q -O - |bash
 
 If you only want to see the warnings use
@@ -35,9 +36,14 @@ The information Lunasec.io has put out about hashes of vulnerable binary Java .c
 
 https://github.com/lunasec-io/lunasec/blob/master/tools/log4shell/constants/vulnerablehashes.go
 
-We did not include an actual URL, set SHA256_HASHES_URL in the script or as first parameter on the shell. 
-
 Also see their blog: https://www.lunasec.io/docs/blog/log4j-zero-day-mitigation-guide/
+
+#### usage
+
+We did include a SHA256_HASHES_URL in the script that directs to the file `hashes-pre-cve.txt` in this repository. But you can add your own URL as first parameter to the script on the shell or use a local file, e.g. store your file in `hashes-pre-cve_local.txt` and then call:
+
+    ./log4j_checker_beta.sh hashes-pre-cve_local.txt
+
 
 ### dependencies
 

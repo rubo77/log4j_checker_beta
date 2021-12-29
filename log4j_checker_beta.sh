@@ -67,10 +67,16 @@ fi
 dir_temp_hashes=$(mktemp -d --suffix _log4jscan)
 file_temp_hashes="$dir_temp_hashes/vulnerable.hashes"
 ok_hashes=
-if [[ -n $SHA256_HASHES_URL && $(command -v wget) ]]; then
-  wget  --max-redirect=0 --tries=2 -O "$file_temp_hashes.in" -- "$SHA256_HASHES_URL"
-elif [[ -n $SHA256_HASHES_URL && $(command -v curl) ]]; then
-  curl --globoff -f "$SHA256_HASHES_URL" -o "$file_temp_hashes.in"
+regex='^[httpsfile]+://.*$'
+if [[ -n $SHA256_HASHES_URL && $SHA256_HASHES_URL =~ $regex ]]; then
+  if [[ -n $SHA256_HASHES_URL && $(command -v wget) ]]; then
+    wget  --max-redirect=0 --tries=2 -O "$file_temp_hashes.in" -- "$SHA256_HASHES_URL"
+  elif [[ -n $SHA256_HASHES_URL && $(command -v curl) ]]; then
+    curl --globoff -f "$SHA256_HASHES_URL" -o "$file_temp_hashes.in"
+  fi
+else
+  information "Using the local file '$SHA256_HASHES_URL'"
+  cp "$SHA256_HASHES_URL" "$file_temp_hashes.in"
 fi
 if [[ $? = 0 && -s "$file_temp_hashes.in" ]]; then
   cat "$file_temp_hashes.in" | cut -d" " -f1 | sort | uniq  > "$file_temp_hashes"
