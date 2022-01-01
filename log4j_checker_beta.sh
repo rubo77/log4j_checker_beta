@@ -64,7 +64,7 @@ if [ $USER != root ]; then
   warning "You have no root-rights. Not all files will be found."
 fi
 
-dir_temp_hashes=$(mktemp -d --suffix _log4jscan)
+dir_temp_hashes=$(mktemp -d -t log4jscan_XXXXXX)
 file_temp_hashes="$dir_temp_hashes/vulnerable.hashes"
 ok_hashes=
 regex='^[httpsfile]+://.*$'
