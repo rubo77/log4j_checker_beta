@@ -99,7 +99,7 @@ function find_jar_files() {
 }
 
 # check root user
-if [ $USER != root ]; then
+if [ "$EUID" -ne 0 ]; then
   warning "You have no root-rights. Not all files will be found."
 fi
 
@@ -131,7 +131,7 @@ fi
 echo
 information "Looking for files containing log4j..."
 if [ "$(command -v locate)" ]; then
-  information "using locate, which could be using outdated data. besure to have called updatedb recently"
+  information "Using locate, which could be using outdated data. Be sure to have called updatedb recently"
 fi
 OUTPUT="$(locate_log4j | grep -iv log4js | grep -v log4j_checker_beta)"
 if [ "$OUTPUT" ]; then
