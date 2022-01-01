@@ -132,6 +132,8 @@ echo
 information "Looking for files containing log4j..."
 if [ "$(command -v locate)" ]; then
   information "Using locate, which could be using outdated data. Be sure to have called updatedb recently"
+else
+  information "locate is not installed, using slower find method"
 fi
 OUTPUT="$(locate_log4j | grep -iv log4js | grep -v log4j_checker_beta)"
 if [ "$OUTPUT" ]; then
