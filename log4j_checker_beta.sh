@@ -5,11 +5,43 @@
 # needs locate to be installed, be sure to be up-to-date with
 # sudo updatedb
 
+OPTIND=1
+VERBOSE=0
+EXTRA_DIRS=
+SHA256_HASHES_URL=
+
+function show_help {
+cat <<%
+Usage: $0 [OPTION] [SHA256_HASHES_URL]
+
+  -h show this help
+  -v verbose
+  -u SHA256_HASHES_URL (this can be added without -f also)
+  -e extra directories to search (e.g. -e "/data /media")
+%
+}
+
+while getopts "h?vu:e:" opt; do
+  case "$opt" in
+    h|\?)
+      show_help
+      exit 0
+      ;;
+    v)  VERBOSE=1
+      ;;
+    e)  EXTRA_DIRS=$OPTARG
+      ;;
+    u)  SHA256_HASHES_URL=$OPTARG
+      ;;
+  esac
+done
+
+shift $((OPTIND-1))
+
+[ "${1:-}" = "--" ] && shift
+
 # regular expression, check the following packages:
 PACKAGES='solr\|elastic\|log4j'
-
-# Set this if you have a download for sha256 hashes
-SHA256_HASHES_URL="$1"
 
 RED="\033[0;31m"; GREEN="\033[32m"; YELLOW="\033[1;33m"; ENDCOLOR="\033[0m"
 # if you don't want colored output, set the variables to empty strings:
@@ -28,11 +60,18 @@ function ok() {
 }
 
 if [ "$SHA256_HASHES_URL" = "" ]; then
+  SHA256_HASHES_URL="$@"
+fi
+if [ "$SHA256_HASHES_URL" = "" ]; then
   information "using default hash file. If you want to use other hashes, set another URL as first argument"
   SHA256_HASHES_URL="https://raw.githubusercontent.com/rubo77/log4j_checker_beta/main/hashes-pre-cve.txt"
 fi
 
+# echo "VERBOSE=$VERBOSE, EXTRA_DIRS='$EXTRA_DIRS', SHA256_HASHES_URL='$SHA256_HASHES_URL', Leftovers: $@"; exit
+
 export LANG=
+
+DIRS_TO_SEARCH="/var /etc /usr /opt /lib*"
 
 function locate_log4j() {
   if [ "$(command -v locate)" ]; then
@@ -44,7 +83,7 @@ function locate_log4j() {
     fi
   else
     find \
-      /var /etc /usr /opt /lib* \
+      $DIRS_TO_SEARCH $EXTRA_DIRS \
       -iname "*log4j*" 2>&1 \
       | grep -v '^find:.* Permission denied$' \
       | grep -v '^find:.* No such file or directory$'
@@ -53,7 +92,7 @@ function locate_log4j() {
 
 function find_jar_files() {
   find \
-    /var /etc /usr /opt /lib* \
+    $DIRS_TO_SEARCH $EXTRA_DIRS \
     -iname "*.jar" -o -iname "*.war" -o -iname "*.ear" 2>&1 \
     | grep -v '^find:.* Permission denied$' \
     | grep -v '^find:.* No such file or directory$'
@@ -136,13 +175,14 @@ fi
 
 # perform best-effort find call for all jars and optionally check against hashes
 echo
-information "Analyzing JAR/WAR/EAR files..."
+information "Analyzing JAR/WAR/EAR files in $DIRS_TO_SEARCH $EXTRA_DIRS ..."
 if [ $ok_hashes ]; then
   information "Also checking hashes"
 fi
 COUNT=0
 COUNT_FOUND=0
 if [ "$(command -v unzip)" ]; then
+  
   # incect find_jar_files at the end of the while loop to prevent extra shell
   while read -r jar_file; do
     unzip -l "$jar_file" 2> /dev/null \
@@ -166,14 +206,16 @@ if [ "$(command -v unzip)" ]; then
         echo
         warning "[$COUNT - vulnerable binary classes] $jar_file"
         COUNT_FOUND=$(($COUNT_FOUND + 1))
+      elif [ $VERBOSE ]; then
+        ok "[$COUNT] No .class files with known vulnerable hash found in $jar_file at first level."
       else
         printf "."
-        # ok "[$COUNT] No .class files with known vulnerable hash found in $jar_file at first level."
       fi
       # delete temp folder containing the extracted java files
       rm -rf -- "$dir_unzip"
     fi
   done <<<"$(find_jar_files)"
+  
   echo
   if [[ $COUNT -gt 0 ]]; then
     information "Found $COUNT files in unpacked binaries containing the string 'log4j' with $COUNT_FOUND vulnerabilities"
@@ -181,12 +223,11 @@ if [ "$(command -v unzip)" ]; then
       warning "Found $COUNT_FOUND vulnerabilities in unpacked binaries"
     fi
   fi
+  # delete temp folder containing $file_temp_hashes
+  [ $ok_hashes ] && rm -rf -- "$dir_temp_hashes"
 else
   information "Cannot look for log4j inside JAR/WAR/EAR files (unzip not found)"
 fi
-
-# delete temp folder containing $file_temp_hashes
-[ $ok_hashes ] && rm -rf -- "$dir_temp_hashes"
 
 information "_________________________________________________"
 if [ "$JAVA" == "" ]; then
