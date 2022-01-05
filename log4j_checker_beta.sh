@@ -200,9 +200,18 @@ if [ "$(command -v unzip)" ]; then
       base_name=$(basename "$jar_file")
       dir_unzip="$dir_temp_hashes/java/$COUNT""_$( echo "$base_name" | tr -dc '[[:alpha:]]')"
       mkdir -p "$dir_unzip"
-      unzip -qq -DD "$jar_file" '*.class' -d "$dir_unzip" 2> /dev/null \
-        && find "$dir_unzip" -type f -not -name "*"$'\n'"*" -iname '*.class' -exec sha256sum "{}" \; \
-        | cut -d" " -f1 | sort | uniq > "$dir_unzip/$base_name.hashes";
+
+      if [[ $(command -v sha256sum) ]]
+      then
+        unzip -qq -DD "$jar_file" '*.class' -d "$dir_unzip" 2> /dev/null \
+          && find "$dir_unzip" -type f -not -name "*"$'\n'"*" -iname '*.class' -exec sha256sum "{}" \; \
+          | cut -d" " -f1 | sort | uniq > "$dir_unzip/$base_name.hashes";
+      else
+        unzip -qq -DD "$jar_file" '*.class' -d "$dir_unzip" 2> /dev/null \
+          && find "$dir_unzip" -type f -not -name "*"$'\n'"*" -iname '*.class' -exec openssl dgst -sha256 "{}" \; \
+          | cut -d" " -f2 | sort | uniq > "$dir_unzip/$base_name.hashes";
+      fi
+
       if [ -f "$dir_unzip/$base_name.hashes" ]; then
         num_found=$(comm -12 "$file_temp_hashes" "$dir_unzip/$base_name.hashes" | wc -l)
       else
