@@ -7,6 +7,7 @@
 
 OPTIND=1
 VERBOSE=0
+DEBUG=0
 EXTRA_DIRS=
 SHA256_HASHES_URL=
 
@@ -16,18 +17,23 @@ Usage: $0 [OPTION] [SHA256_HASHES_URL]
 
   -h show this help
   -v verbose
+  -d debug
   -u SHA256_HASHES_URL (this can be added without -f also)
   -e extra directories to search (e.g. -e "/data /media")
 %
 }
 
-while getopts "h?vu:e:" opt; do
+while getopts "h?vdu:e:" opt; do
   case "$opt" in
     h|\?)
       show_help
       exit 0
       ;;
     v)  VERBOSE=1
+      ;;
+    d)  DEBUG=1
+        VERBOSE=1
+        set -x
       ;;
     e)  EXTRA_DIRS=$OPTARG
       ;;
@@ -201,16 +207,16 @@ if [ "$(command -v unzip)" ]; then
       dir_unzip="$dir_temp_hashes/java/$COUNT""_$( echo "$base_name" | tr -dc '[[:alpha:]]')"
       mkdir -p "$dir_unzip"
 
-      if [[ $(command -v sha256sum) ]]
-      then
-        unzip -qq -DD "$jar_file" '*.class' -d "$dir_unzip" 2> /dev/null \
-          && find "$dir_unzip" -type f -not -name "*"$'\n'"*" -iname '*.class' -exec sha256sum "{}" \; \
-          | cut -d" " -f1 | sort | uniq > "$dir_unzip/$base_name.hashes";
+      if [[ $(command -v sha256sum) ]]; then
+        SHA256SUM_COMMAND="sha256sum"
+        SHA256SUM_POS=1
       else
-        unzip -qq -DD "$jar_file" '*.class' -d "$dir_unzip" 2> /dev/null \
-          && find "$dir_unzip" -type f -not -name "*"$'\n'"*" -iname '*.class' -exec openssl dgst -sha256 "{}" \; \
-          | cut -d" " -f2 | sort | uniq > "$dir_unzip/$base_name.hashes";
+        $SHA256SUM_COMMAND="openssl dgst -sha256"
+        SHA256SUM_POS=2
       fi
+      unzip -qq -DD "$jar_file" '*.class' -d "$dir_unzip" 2> /dev/null \
+      && find "$dir_unzip" -type f -not -name "*"$'\n'"*" -iname '*.class' -exec $SHA256SUM_COMMAND "{}" \; \
+      | cut -d" " -f$SHA256SUM_POS | sort | uniq > "$dir_unzip/$base_name.hashes";
 
       if [ -f "$dir_unzip/$base_name.hashes" ]; then
         num_found=$(comm -12 "$file_temp_hashes" "$dir_unzip/$base_name.hashes" | wc -l)
@@ -227,7 +233,9 @@ if [ "$(command -v unzip)" ]; then
         printf "."
       fi
       # delete temp folder containing the extracted java files
-      rm -rf -- "$dir_unzip"
+      if [ $DEBUG == 0 ]; then
+        rm -rf -- "$dir_unzip"
+      fi
     fi
   done <<<"$(find_jar_files)"
   
@@ -238,8 +246,12 @@ if [ "$(command -v unzip)" ]; then
       warning "Found $COUNT_FOUND vulnerabilities in unpacked binaries"
     fi
   fi
-  # delete temp folder containing $file_temp_hashes
-  [ $ok_hashes ] && rm -rf -- "$dir_temp_hashes"
+  if [ $DEBUG == 1 ]; then
+    information "DEBUG MODE: the temporary directory is not deleted: $dir_temp_hashes"
+  else
+    # delete temp folder containing $file_temp_hashes
+    [ $ok_hashes ] && rm -rf -- "$dir_temp_hashes"
+  fi
 else
   information "Cannot look for log4j inside JAR/WAR/EAR files (unzip not found)"
 fi
