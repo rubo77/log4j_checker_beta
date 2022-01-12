@@ -6,38 +6,49 @@
 # sudo updatedb
 
 OPTIND=1
-VERBOSE=0
+VERBOSITY=0
 DEBUG=0
 EXTRA_DIRS=
 SHA256_HASHES_URL=
+PROGNAME="${0##*/}"
+VERSION="1.0"
 
 function show_help {
 cat <<%
-Usage: $0 [OPTION] [SHA256_HASHES_URL]
+Usage: ${PROGNAME} [SHA256_HASHES_URL] [-hvdV] [-e path list] [-u SHA256_HASHES_URL]
 
   -h show this help
   -v verbose
+  -V Version
   -d debug
   -u SHA256_HASHES_URL (this can be added without -f also)
   -e extra directories to search (e.g. -e "/data /media")
 %
 }
 
-while getopts "h?vdu:e:" opt; do
+while getopts "Vh?vdu:e:" opt; do
   case "$opt" in
     h|\?)
       show_help
       exit 0
       ;;
-    v)  VERBOSE=1
+    v)
+      VERBOSITY=$(( ${VERBOSITY} + 1 ))
       ;;
-    d)  DEBUG=1
-        VERBOSE=1
-        set -x
+    d)
+      DEBUG=1
+      VERBOSITY=10
+      set -x
       ;;
-    e)  EXTRA_DIRS=$OPTARG
+    e)
+      EXTRA_DIRS=$OPTARG
       ;;
-    u)  SHA256_HASHES_URL=$OPTARG
+    u)
+      SHA256_HASHES_URL=$OPTARG
+      ;;
+    V)
+      echo "${PROGNAME} ${VERSION}"
+      exit 0
       ;;
   esac
 done
@@ -73,7 +84,7 @@ if [ "$SHA256_HASHES_URL" = "" ]; then
   SHA256_HASHES_URL="https://raw.githubusercontent.com/rubo77/log4j_checker_beta/main/hashes-pre-cve.txt"
 fi
 
-# echo "VERBOSE=$VERBOSE, EXTRA_DIRS='$EXTRA_DIRS', SHA256_HASHES_URL='$SHA256_HASHES_URL', Leftovers: $@"; exit
+# echo "VERBOSITY=$VERBOSITY, EXTRA_DIRS='$EXTRA_DIRS', SHA256_HASHES_URL='$SHA256_HASHES_URL', Leftovers: $@"; exit
 
 export LANG=
 
@@ -109,7 +120,7 @@ if [ "$EUID" -ne 0 ]; then
   warning "You have no root-rights. Not all files will be found."
 fi
 
-dir_temp_hashes=$(mktemp -d -t log4jscan_XXXXXX)
+dir_temp_hashes=$(mktemp -d -t ${PROGNAME}_XXXXXX)
 file_temp_hashes="$dir_temp_hashes/vulnerable.hashes"
 ok_hashes=
 regex='^[httpsfile]+://.*$'
@@ -227,7 +238,7 @@ if [ "$(command -v unzip)" ]; then
         echo
         warning "[$COUNT - vulnerable binary classes] $jar_file"
         COUNT_FOUND=$(($COUNT_FOUND + 1))
-      elif [ $VERBOSE == 1 ]; then
+      elif [ $VERBOSITY -gt 0 ]; then
         ok "[$COUNT] No .class files with known vulnerable hash found in $jar_file at first level."
       else
         printf "."
@@ -253,7 +264,7 @@ if [ "$(command -v unzip)" ]; then
     [ $ok_hashes ] && rm -rf -- "$dir_temp_hashes"
   fi
 else
-  information "Cannot look for log4j inside JAR/WAR/EAR files (unzip not found)"
+  information 'Cannot look for log4j inside JAR/WAR/EAR files (unzip not found)'
 fi
 
 information "_________________________________________________"
