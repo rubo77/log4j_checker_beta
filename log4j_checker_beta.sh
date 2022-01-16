@@ -230,6 +230,9 @@ if [ "$(command -v unzip)" ]; then
       | cut -d" " -f$SHA256SUM_POS | sort | uniq > "$dir_unzip/$base_name.hashes";
 
       if [ -f "$dir_unzip/$base_name.hashes" ]; then
+        if [ $VERBOSITY -gt 1 ]; then
+          information "[$COUNT] searching hash of $dir_unzip/$base_name.hashes in $file_temp_hashes"
+        fi
         num_found=$(comm -12 "$file_temp_hashes" "$dir_unzip/$base_name.hashes" | wc -l)
       else
         num_found=0
@@ -240,6 +243,7 @@ if [ "$(command -v unzip)" ]; then
         COUNT_FOUND=$(($COUNT_FOUND + 1))
       elif [ $VERBOSITY -gt 0 ]; then
         ok "[$COUNT] No .class files with known vulnerable hash found in $jar_file at first level."
+        # TODO: if there are packed files inside, search recursively
       else
         printf "."
       fi
